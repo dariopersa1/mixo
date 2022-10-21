@@ -5,6 +5,8 @@ var collection = firestore.collection
 var express = require('express')
 var app = express()
 app.use(express.json())
+const swaggerUi = require('swagger-ui-express'),
+swaggerDocument = require('./swagger.json');
 const url = require('url')
 var jwt = require('jwt-simple');
 const { updateDoc } = require('firebase/firestore')
@@ -21,6 +23,13 @@ const firebaseConfig = {
   appId: "1:706179527888:web:b668a722cc4f17e9bf5ad5",
   measurementId: "G-ZXY1NS926B"
 };
+
+// Swagger documentation
+app.use(
+  '/api-docs',
+  swaggerUi.serve, 
+  swaggerUi.setup(swaggerDocument)
+);
 
 // Initialize Firebase
 const appFirebase = firebase.initializeApp(firebaseConfig);
