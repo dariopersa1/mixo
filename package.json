@@ -1,0 +1,29 @@
+{
+  "name": "mixo",
+  "version": "1.0.0",
+  "description": "Cocktail API",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dariopersa1/mixo.git"
+  },
+  "keywords": [
+    "api",
+    "cocktails",
+    "webapp"
+  ],
+  "author": "Darío Zorrilla",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dariopersa1/mixo/issues"
+  },
+  "homepage": "https://github.com/dariopersa1/mixo#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "firebase": "^9.12.1"
+  }
+}
