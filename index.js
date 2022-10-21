@@ -1,11 +1,4 @@
-//import cocktails from './coctkails'
-// Import the functions you need from the SDKs you need
-/*import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-import { collection, addDoc } from "firebase/firestore";*/
 var firebase = require('firebase/app')
-//var analytics = require('firebase/analytics')
 var firestore = require('firebase/firestore')
 var getFirestore = firestore.getFirestore
 var collection = firestore.collection
@@ -14,9 +7,8 @@ var app = express()
 app.use(express.json())
 const usuarios = [{username: 'dario', pass: '123'}, {username: 'otto', pass: '123'}]
 const url = require('url')
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+var jwt = require('jwt-simple');
+const secret = 'mixo'
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -32,8 +24,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const appFirebase = firebase.initializeApp(firebaseConfig);
-//const firebaseAnalytics = analytics.getAnalytics(appFirebase);
-// Initialize Cloud Firestore and get a reference to the service
 const db = getFirestore(appFirebase);
 const cocktailsRef = collection(db, "cocktails")
 
@@ -62,36 +52,73 @@ app.get('/api/firebase/load',async function(pet, resp) {
   }
 })
 
-app.post('/api/login', function(pet, resp){
+app.post('/api/login', async function(pet, resp){
     const queryParams = url.parse(pet.url, true).query
-    var user = {username: queryParams.username, pass: queryParams.password}
+    var user = {username: queryParams.username, password: queryParams.password}
     var found = false
-    console.log(user)
-    usuarios.forEach(u => {
-        if(u.username == user.username){
-            found = true
-            resp.status(200)
-            resp.send('Usuario autenticado correctamente')
-        }
-    })
-    if(!found) {
+    var q = firestore.query(collection(db, "users"), firestore.where("username", "==", user.username))
+    const querySnapshot = await firestore.getDocs(q);
+    
+    if(querySnapshot.docs[0] != undefined){
+      var u = querySnapshot.docs[0].data()
+      var dPassword = jwt.decode(u.password, secret)
+      if(u.username == user.username && dPassword == user.password){
+        resp.status(200)
+        resp.send({token: jwt.encode(user.username+user.password, secret)})
+      }else{
         resp.status(401)
-        resp.send('Usuario no encontrado')
+        resp.send('Las credenciales no coinciden')
+      }
+    }else{
+      resp.status(401)
+      resp.send('Usuario no encontrado')
     }
-    resp.end()
 })
 
-app.get('/api/cocktails', async function(pet,resp) {
-    var cocktails = []
-    var querySnapshot = await firestore.getDocs(cocktailsRef)
-    querySnapshot.forEach((doc) => {
-      cocktails.push(doc.data())
-    })
-    resp.status(200)
-    resp.send(cocktails)
+app.post('/api/register',async function(pet, resp) {
+  var obj = pet.body
+  var usuario = {username: obj.username, password: obj.password, email: obj.email}
+  if(usuario.username != undefined){
+    var q = firestore.query(collection(db, "users"), firestore.where("username", "==", usuario.username))
+    const querySnapshot = await firestore.getDocs(q);
+    
+    if(querySnapshot.docs[0] == undefined){
+      try{
+        const docRef = await firestore.addDoc(collection(db, "users"), {
+          username: usuario.username,
+          password: jwt.encode(usuario.password, secret),
+          email: usuario.email
+        });
+        
+        resp.status(200)
+        resp.send('Usuario registrado con éxito')
+      }catch(e) {
+        resp.status(403)
+        resp.send('Algo salió mal', e)
+      }
+    }else{
+      resp.status(403)
+      resp.send('Usuario ya existe')
+    }
+    
+  }else{
+    resp.status(403)
+    resp.send('Usuario undefined')
+  }
 })
 
-app.get('/api/cocktails/:id', async function(pet, resp) {
+app.get('/api/cocktails', chekToken, async function(pet,resp) {
+  
+  var cocktails = []
+  var querySnapshot = await firestore.getDocs(cocktailsRef)
+  querySnapshot.forEach((doc) => {
+    cocktails.push(doc.data())
+  })
+  resp.status(200)
+  resp.send(cocktails)
+})
+
+app.get('/api/cocktails/:id', chekToken, async function(pet, resp) {
   var id = pet.params.id
   console.log(id)
   var q = firestore.query(cocktailsRef, firestore.where("id", "==", id))
@@ -107,7 +134,7 @@ app.get('/api/cocktails/:id', async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktail/:name', async function(pet, resp) {
+app.get('/api/cocktail/:name', chekToken, async function(pet, resp) {
   var name = pet.params.name
   console.log(name)
   var q = firestore.query(cocktailsRef, firestore.where("name", "==", name))
@@ -123,7 +150,7 @@ app.get('/api/cocktail/:name', async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktails/category/:category',async function(pet, resp) {
+app.get('/api/cocktails/category/:category', chekToken, async function(pet, resp) {
   var cat = pet.params.category
   console.log(cat)
   var q = firestore.query(cocktailsRef, firestore.where("category", "==", cat))
@@ -142,7 +169,7 @@ app.get('/api/cocktails/category/:category',async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktails/ingredients/:ingredient',async function(pet, resp) {
+app.get('/api/cocktails/ingredients/:ingredient', chekToken, async function(pet, resp) {
   var ing = {ingredient: pet.params.ingredient}
   console.log(ing)
   const querySnapshot = await firestore.getDocs(cocktailsRef);
@@ -166,4 +193,28 @@ app.get('/api/cocktails/ingredients/:ingredient',async function(pet, resp) {
 app.listen(3000, function(){
 	console.log("Servidor arrancado!!!")
 })
+
+function chekToken(pet, resp, next) {
+  var token = getAuthenticationToken(pet)
+  try{
+    //si el token no fuera válido esto generaría una excepción
+    var decoded = jwt.decode(token, secret);
+    if(decoded != undefined)
+      next()
+  }catch(e){
+    resp.status(403)
+    resp.send("No tienes permiso " + e)
+  }
+}
+
+function getAuthenticationToken(pet){
+  var cabecera = pet.header('Authorization')
+  if(cabecera) {
+    var campos = cabecera.split(' ')
+    if(campos.length > 1 && cabecera.startsWith('Bearer')){
+      return campos[1]
+    }
+  }
+  return undefined
+}
 
