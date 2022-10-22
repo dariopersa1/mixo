@@ -75,11 +75,11 @@ app.post('/api/login', async function(pet, resp){
         resp.status(200)
         resp.send({token: jwt.encode(user.username+user.password, secret)})
       }else{
-        resp.status(401)
+        resp.status(404)
         resp.send('Las credenciales no coinciden')
       }
     }else{
-      resp.status(401)
+      resp.status(404)
       resp.send('Usuario no encontrado')
     }
 })

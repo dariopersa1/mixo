@@ -1,0 +1,76 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Mixo API",
+        "description": "API for a Mixo, a cocktail web app for users to enjoy",
+        "version": "1.0.0"
+    },
+    "host": "localhost:3000",
+    "basePath": "/api",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/login":{
+            "post": {
+                "description": "Login for users to authenticate",
+                "operationId": "login",
+                "produces": [
+                    "application/json",
+                    "application/xml",
+                    "text/xml",
+                    "text/html"
+                ],
+                "parameters": [
+                    {
+                      "name": "username",
+                      "in": "header",
+                      "description": "Username from the user",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "password",
+                      "in": "header",
+                      "description": "Password for login in",
+                      "required": true,
+                      "type": "string"
+                    }
+                ],
+                  "responses": {
+                    "200": {
+                      "description": "login successful",
+                      "schema": {
+                        "type": "json",
+                        "items": {
+                          "token": "ej0adfjklwefñlkasmñflasnlfkalvañlgmo"
+                        }
+                      }
+                    },
+                    "404": {
+                        "description": "user not found",
+                        "schema": {
+                          "type": "json",
+                          "items": {
+                            "token": "ej0adfjklwefñlkasmñflasnlfkalvañlgmo"
+                          }
+                        }
+                    },
+                    "default": {
+                      "description": "unexpected error",
+                      "schema": {
+                        
+                      }
+                    }
+                }
+            }
+        }
+    }
+    
+}
