@@ -25,11 +25,11 @@ const firebaseConfig = {
 };
 
 // Swagger documentation
-app.use(
+/*app.use(
   '/api-docs',
   swaggerUi.serve, 
   swaggerUi.setup(swaggerDocument)
-);
+);*/
 
 // Initialize Firebase
 const appFirebase = firebase.initializeApp(firebaseConfig);
@@ -146,7 +146,7 @@ app.get('/api/cocktails', chekToken, async function(pet,resp) {
 })
 
 app.get('/api/cocktails/:id', chekToken, async function(pet, resp) {
-  var id = pet.params.id
+  var id = Number(pet.params.id)
   var q = firestore.query(cocktailsRef, firestore.where("id", "==", id))
   const querySnapshot = await firestore.getDocs(q);
   
@@ -269,8 +269,6 @@ app.put('/api/cocktail/:name', chekToken, async function(pet, resp) {
 
 app.delete('/api/cocktail/:name', chekToken, async function(pet, resp) {
   var name = pet.params.name
-  var doc
-
   var q = firestore.query(cocktailsRef, firestore.where("name", "==", name))
   const querySnapshot = await firestore.getDocs(q);
   
@@ -298,10 +296,11 @@ app.delete('/api/cocktail/:name', chekToken, async function(pet, resp) {
 app.get('/api/cocktails/category/:category', chekToken, async function(pet, resp) {
   var cat = pet.params.category
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
+  console.log(pet.body.limit)
   var before = pet.body.before
   var after = pet.body.after
   const last = await getLastId()
-  var q = firestore.query(cocktailsRef, firestore.where("category", "==", cat), firestore.limit(30)) //Pagination
+  var q = firestore.query(cocktailsRef, firestore.where("category", "==", cat), firestore.limit(limit)) //Pagination
   if(after != undefined && after != last.toString()){
     query = firestore.query(collection(db, "cocktails"), firestore.where("category", "==", cat), firestore.limit(limit), startAfter(after)) //pagination
   }else if(before != undefined && before != '0'){
@@ -331,11 +330,11 @@ app.get('/api/cocktails/ingredients/:ingredient', chekToken, async function(pet,
   var before = pet.body.before
   var after = pet.body.after
   const last = await getLastId()
-  var query = firestore.query(cocktailsRef, limit(30))
+  var query = firestore.query(cocktailsRef, orderBy("id"))
   if(after != undefined && after != last.toString()){
-    query = firestore.query(collection(db, "cocktails"), orderBy("id"), firestore.limit(limit), startAfter(after)) //pagination
+    query = firestore.query(collection(db, "cocktails"), orderBy("id"), startAfter(after)) //pagination
   }else if(before != undefined && before != '0'){
-    query = firestore.query(collection(db, "cocktails"), firestore.where("category", "==", cat), orderBy("id"), firestore.limitToLast(limit), endBefore(before)) //pagination
+    query = firestore.query(collection(db, "cocktails"), orderBy("id"), endBefore(before)) //pagination
   }
   const querySnapshot = await firestore.getDocs(query);
   var cocktails = []
@@ -343,10 +342,13 @@ app.get('/api/cocktails/ingredients/:ingredient', chekToken, async function(pet,
     var c = doc.data()
     if(c.ingredientes.find(i => i.ingredient === ing.ingredient) != undefined)
       cocktails.push(doc.data())
+
+    if(cocktails.length >= limit)
+      return
   })
   cocktails.sort((a, b) => (a.id > b.id) ? 1 : ((a.id < b.id) ? -1 : 0))
   const firstVisible = querySnapshot.docs[0];
-  const size = querySnapshot.docs.length
+  const size = cocktails.length
   const lastVisible = querySnapshot.docs[querySnapshot.docs.length-1];
   if(size > 0){
     resp.status(200)
