@@ -9,7 +9,7 @@ const swaggerUi = require('swagger-ui-express'),
 swaggerDocument = require('./swagger.json');
 const url = require('url')
 var jwt = require('jwt-simple');
-const { updateDoc } = require('firebase/firestore')
+const { updateDoc, orderBy, limit, startAfter, endAt, endBefore, startAt } = require('firebase/firestore')
 const secret = 'mixo'
 
 // Your web app's Firebase configuration
@@ -42,7 +42,7 @@ app.get('/api/firebase/load', chekTokenFirebase, async function(pet, resp) {
     for(i = 0; i < cocteles.length-1; i++){
       cocktail = cocteles[i]
       const docRef = await firestore.addDoc(collection(db, "cocktails"), {
-        id: i.toString(),
+        id: i,
         name: cocktail.name,
         glass: cocktail.glass,
         ingredientes: cocktail.ingredients,
@@ -64,7 +64,7 @@ app.get('/api/firebase/load', chekTokenFirebase, async function(pet, resp) {
 app.post('/api/login', async function(pet, resp){
     const queryParams = url.parse(pet.url, true).query
     var user = {username: queryParams.username, password: queryParams.password}
-    var found = false
+    
     var q = firestore.query(collection(db, "users"), firestore.where("username", "==", user.username))
     const querySnapshot = await firestore.getDocs(q);
     
@@ -75,7 +75,7 @@ app.post('/api/login', async function(pet, resp){
         resp.status(200)
         resp.send({token: jwt.encode(user.username+user.password, secret)})
       }else{
-        resp.status(404)
+        resp.status(401)
         resp.send('Las credenciales no coinciden')
       }
     }else{
@@ -111,20 +111,38 @@ app.post('/api/register',async function(pet, resp) {
     }
     
   }else{
-    resp.status(403)
+    resp.status(404)
     resp.send('Usuario undefined')
   }
 })
 
 app.get('/api/cocktails', chekToken, async function(pet,resp) {
-  
+  var limit = pet.body.limit != undefined ? pet.body.limit : 30
+  var before = pet.body.before
+  var after = pet.body.after
+  const last = await getLastId()
   var cocktails = []
-  var querySnapshot = await firestore.getDocs(cocktailsRef)
+  var query = firestore.query(collection(db, "cocktails"), orderBy("id"), firestore.limit(limit))
+  if(after != undefined && after != last.toString()){
+    query = firestore.query(collection(db, "cocktails"), orderBy("id"), firestore.limit(limit), startAfter(after)) //pagination
+  }else if(before != undefined && before != '0'){
+    query = firestore.query(collection(db, "cocktails"), orderBy("id"), firestore.limitToLast(limit), endBefore(before)) //pagination
+  }
+  var querySnapshot = await firestore.getDocs(query)
   querySnapshot.forEach((doc) => {
     cocktails.push(doc.data())
   })
-  resp.status(200)
-  resp.send(cocktails)
+  cocktails.sort((a, b) => (a.id > b.id) ? 1 : ((a.id < b.id) ? -1 : 0))
+  const firstVisible = querySnapshot.docs[0];
+  const size = querySnapshot.docs.length
+  const lastVisible = querySnapshot.docs[querySnapshot.docs.length-1];
+  if(size > 0){
+    resp.status(200)
+    resp.send({data: cocktails, limit: size, after: lastVisible.data().id < last ? lastVisible.data().id : -1, before: firstVisible.data().id > 0 ? firstVisible.data().id : -1})
+  }else{
+    resp.status(404)
+    resp.send("No cocktails found")
+  }
 })
 
 app.get('/api/cocktails/:id', chekToken, async function(pet, resp) {
@@ -279,17 +297,28 @@ app.delete('/api/cocktail/:name', chekToken, async function(pet, resp) {
 
 app.get('/api/cocktails/category/:category', chekToken, async function(pet, resp) {
   var cat = pet.params.category
-  console.log(cat)
-  var q = firestore.query(cocktailsRef, firestore.where("category", "==", cat))
+  var limit = pet.body.limit != undefined ? pet.body.limit : 30
+  var before = pet.body.before
+  var after = pet.body.after
+  const last = await getLastId()
+  var q = firestore.query(cocktailsRef, firestore.where("category", "==", cat), firestore.limit(30)) //Pagination
+  if(after != undefined && after != last.toString()){
+    query = firestore.query(collection(db, "cocktails"), firestore.where("category", "==", cat), firestore.limit(limit), startAfter(after)) //pagination
+  }else if(before != undefined && before != '0'){
+    query = firestore.query(collection(db, "cocktails"), firestore.where("category", "==", cat), firestore.limitToLast(limit), endBefore(before)) //pagination
+  }
   const querySnapshot = await firestore.getDocs(q);
   var cocktails = []
   querySnapshot.docs.forEach((doc) => {
     cocktails.push(doc.data())
   })
-  console.log(cocktails)
+  cocktails.sort((a, b) => (a.id > b.id) ? 1 : ((a.id < b.id) ? -1 : 0))
+  const firstVisible = querySnapshot.docs[0];
+  const size = querySnapshot.docs.length
+  const lastVisible = querySnapshot.docs[querySnapshot.docs.length-1];
   if(cocktails.length > 0){
     resp.status(200)
-    resp.send(cocktails)
+    resp.send({data: cocktails, limit: size, after: lastVisible.data().id < last ? lastVisible.data().id : -1, before: firstVisible.data().id < 0 ? firstVisible.data().id : -1})
   }else{
     resp.status(404)
     resp.send('No hay cocktails en la categoria: ' + cat)
@@ -298,19 +327,30 @@ app.get('/api/cocktails/category/:category', chekToken, async function(pet, resp
 
 app.get('/api/cocktails/ingredients/:ingredient', chekToken, async function(pet, resp) {
   var ing = {ingredient: pet.params.ingredient}
-  console.log(ing)
-  const querySnapshot = await firestore.getDocs(cocktailsRef);
+  var limit = pet.body.limit != undefined ? pet.body.limit : 30
+  var before = pet.body.before
+  var after = pet.body.after
+  const last = await getLastId()
+  var query = firestore.query(cocktailsRef, limit(30))
+  if(after != undefined && after != last.toString()){
+    query = firestore.query(collection(db, "cocktails"), orderBy("id"), firestore.limit(limit), startAfter(after)) //pagination
+  }else if(before != undefined && before != '0'){
+    query = firestore.query(collection(db, "cocktails"), firestore.where("category", "==", cat), orderBy("id"), firestore.limitToLast(limit), endBefore(before)) //pagination
+  }
+  const querySnapshot = await firestore.getDocs(query);
   var cocktails = []
   querySnapshot.docs.forEach((doc) => {
     var c = doc.data()
-    console.log(c)
     if(c.ingredientes.find(i => i.ingredient === ing.ingredient) != undefined)
       cocktails.push(doc.data())
   })
-  console.log(cocktails)
-  if(cocktails.length > 0){
+  cocktails.sort((a, b) => (a.id > b.id) ? 1 : ((a.id < b.id) ? -1 : 0))
+  const firstVisible = querySnapshot.docs[0];
+  const size = querySnapshot.docs.length
+  const lastVisible = querySnapshot.docs[querySnapshot.docs.length-1];
+  if(size > 0){
     resp.status(200)
-    resp.send(cocktails)
+    resp.send({data: cocktails, limit: size, after: lastVisible.data().id < last ? lastVisible.data().id : -1, before: firstVisible.data().id < 0 ? firstVisible.data().id : -1})
   }else{
     resp.status(404)
     resp.send('No hay cocktails con el ingrediente ' + ing.ingredient)
@@ -353,6 +393,12 @@ function getAuthenticationToken(pet){
     }
   }
   return undefined
+}
+
+async function getLastId() {
+  var query = firestore.query(cocktailsRef, orderBy('id', 'desc'), limit(1))
+  var querySnapshot = await firestore.getDocs(query)
+  return querySnapshot.docs[0].data().id
 }
 
 const cocteles = [
