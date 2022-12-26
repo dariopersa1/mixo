@@ -1,9 +1,14 @@
-<script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+<script>
+import Items from '../components/ItemComponents.vue'
+export default {
+  components: {
+    Items
+  }
+}
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <Items></Items>
   </main>
 </template>

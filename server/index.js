@@ -36,9 +36,9 @@ const appFirebase = firebase.initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 const cocktailsRef = collection(db, "cocktails")
 
-app.get('/api/firebase/load', chekTokenFirebase, async function(pet, resp) {
+app.get('/api/firebase/load', checkTokenFirebase, async function(pet, resp) {
   try {
-    var cocktail
+    var cocktail;
     for(i = 0; i < cocteles.length-1; i++){
       cocktail = cocteles[i]
       const docRef = await firestore.addDoc(collection(db, "cocktails"), {
@@ -116,7 +116,7 @@ app.post('/api/register',async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktails', chekToken, async function(pet,resp) {
+app.get('/api/cocktails', checkToken, async function(pet,resp) {
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
   var before = pet.body.before
   var after = pet.body.after
@@ -145,7 +145,7 @@ app.get('/api/cocktails', chekToken, async function(pet,resp) {
   }
 })
 
-app.get('/api/cocktails/:id', chekToken, async function(pet, resp) {
+app.get('/api/cocktails/:id', checkToken, async function(pet, resp) {
   var id = Number(pet.params.id)
   var q = firestore.query(cocktailsRef, firestore.where("id", "==", id))
   const querySnapshot = await firestore.getDocs(q);
@@ -160,7 +160,7 @@ app.get('/api/cocktails/:id', chekToken, async function(pet, resp) {
   }
 })
 
-app.put('/api/cocktails/:id', chekToken, async function(pet, resp) {
+app.put('/api/cocktails/:id', checkToken, async function(pet, resp) {
   var id = pet.params.id
   var doc = pet.body.document
   var cocktail = pet.body.cocktail
@@ -192,7 +192,7 @@ app.put('/api/cocktails/:id', chekToken, async function(pet, resp) {
   resp.send("Actualizado con éxito")
 })
 
-app.delete('/api/cocktails/:id', chekToken, async function(pet, resp) {
+app.delete('/api/cocktails/:id', checkToken, async function(pet, resp) {
   var id = pet.params.id
   var doc
 
@@ -220,7 +220,7 @@ app.delete('/api/cocktails/:id', chekToken, async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktail/:name', chekToken, async function(pet, resp) {
+app.get('/api/cocktail/:name', checkToken, async function(pet, resp) {
   var name = pet.params.name
   var q = firestore.query(cocktailsRef, firestore.where("name", "==", name))
   const querySnapshot = await firestore.getDocs(q);
@@ -235,7 +235,7 @@ app.get('/api/cocktail/:name', chekToken, async function(pet, resp) {
   }
 })
 
-app.put('/api/cocktail/:name', chekToken, async function(pet, resp) {
+app.put('/api/cocktail/:name', checkToken, async function(pet, resp) {
   var name = pet.params.name
   var doc = pet.body.document
   var cocktail = pet.body.cocktail
@@ -267,7 +267,7 @@ app.put('/api/cocktail/:name', chekToken, async function(pet, resp) {
   resp.send("Actualizado con éxito")
 })
 
-app.delete('/api/cocktail/:name', chekToken, async function(pet, resp) {
+app.delete('/api/cocktail/:name', checkToken, async function(pet, resp) {
   var name = pet.params.name
   var q = firestore.query(cocktailsRef, firestore.where("name", "==", name))
   const querySnapshot = await firestore.getDocs(q);
@@ -293,7 +293,7 @@ app.delete('/api/cocktail/:name', chekToken, async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktails/category/:category', chekToken, async function(pet, resp) {
+app.get('/api/cocktails/category/:category', checkToken, async function(pet, resp) {
   var cat = pet.params.category
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
   console.log(pet.body.limit)
@@ -324,7 +324,7 @@ app.get('/api/cocktails/category/:category', chekToken, async function(pet, resp
   }
 })
 
-app.get('/api/cocktails/ingredients/:ingredient', chekToken, async function(pet, resp) {
+app.get('/api/cocktails/ingredients/:ingredient', checkToken, async function(pet, resp) {
   var ing = {ingredient: pet.params.ingredient}
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
   var before = pet.body.before
@@ -363,7 +363,7 @@ app.listen(3000, function(){
 	console.log("Servidor arrancado!!!")
 })
 
-function chekToken(pet, resp, next) {
+function checkToken(pet, resp, next) {
   var token = getAuthenticationToken(pet)
   try{
     //si el token no fuera válido esto generaría una excepción
@@ -376,7 +376,7 @@ function chekToken(pet, resp, next) {
   }
 }
 
-function chekTokenFirebase(pet, resp, next) {
+function checkTokenFirebase(pet, resp, next) {
   var token = getAuthenticationToken(pet)
   if(token == firebaseConfig.apiKey){
       next()
