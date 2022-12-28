@@ -1,6 +1,6 @@
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="50" height="50" />
+    <img alt="Mixo logo" class="logo" src="/logo.png" width="150" height="50" />
     <nav>
       <RouterLink to="/">Home</RouterLink>
       <RouterLink to="/login">Login</RouterLink>
