@@ -4,10 +4,7 @@
         <div class="card" v-for="cocktail in cocktails" style="width: 18rem;" @click="details(cocktail.id)">
           <img src="/sophia-sideri-kW6_hPluON0-unsplash.jpg" class="card-img-top" width="18rem" alt="cocktail">
           <div class="card-body">
-            <h5 class="card-title">{{cocktail.name}}</h5>
-            <p class="card-text">{{ cocktail.preparation }}</p>
-          </div>
-          <div class="card-body">
+            <h4 class="card-title">{{cocktail.name}}</h4>
             <a href="#" class="card-link" :if="cocktail.category != 'No category provided'">{{ cocktail.category }}</a>
           </div>
         </div>
@@ -190,12 +187,24 @@ export default {
   
   .card {
     margin-bottom: 32px;
+    cursor: pointer;
+    border-radius: 15px;
+  }
+
+  .card-img-top {
+    border-radius: 15px 15px 0 0;
+    max-height: 400px;
+  }
+
+  .card-title {
+    margin-bottom: 16px;
   }
 
   .card-link {
-    padding: 8px;
-    background-color: #104911;
+    padding: 6px;
+    background-image: url("/header.png");
     color: white;
+    font-size: 14px;
     border-radius: 10px;
   }
 </style>

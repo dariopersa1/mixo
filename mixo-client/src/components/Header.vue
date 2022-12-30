@@ -15,10 +15,14 @@ export default {
 </script>
 <style scoped>
   header {
+    position: fixed;
+    width: 100%;
+    z-index: 1;
     display: flex;
     align-items: center;
-    background-color: #104911;
+    background-image: url("/header.png");
     padding: 16px;
+    margin-bottom: 64px;  
   }
   nav {
     margin-left: 32px;
