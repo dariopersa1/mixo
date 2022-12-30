@@ -5,7 +5,7 @@
           <img src="/sophia-sideri-kW6_hPluON0-unsplash.jpg" class="card-img-top" width="14rem" alt="cocktail">
           <div class="card-body">
             <h4 class="card-title">{{cocktail.name}}</h4>
-            <a href="#" class="card-link" v-if="cocktail.category != 'No category provided'">{{ cocktail.category }}</a>
+            <a :href="'/cocktails/category/'+cocktail.category" class="card-link" v-if="cocktail.category != 'No category provided'">{{ cocktail.category }}</a>
           </div>
         </div>
       </div>
@@ -16,7 +16,9 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      cocktails: []
+      cocktails: [],
+      category: '',
+      ingredient: ''
     }
   },
   methods: {
@@ -36,6 +38,14 @@ export default {
     .catch(error => {
       console.log(error)
     })
+  },
+  created() {
+    this.$watch(
+      () => this.$route.params,
+      (toParams, prevParams) => {
+        console.log(toParams, prevParams)
+      }
+    )
   },
 }
 </script>
