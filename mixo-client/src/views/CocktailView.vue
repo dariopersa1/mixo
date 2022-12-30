@@ -1,5 +1,6 @@
 <template>
-  <div class="container">
+  <Loading v-if="loading"/>
+  <div v-if="!loading" class="container" style="margin-top: 128px">
     <div class="row">
       <div class="col-5 details-left">
         <img class="details-img" src="/ambitious-creative-co-rick-barrett-Hw7hK-kYA-Q-unsplash.jpg" :alt="cocktail.name">
@@ -15,8 +16,8 @@
             <div class="ingredientes">
               <h3>Ingredientes</h3>
               <ul>
-                <li v-for="ing in cocktail.ingredients">
-                  {{ ing.ingredient }} {{ ing.amount }} {{ ing.unit }}
+                <li v-for="ing in cocktail.ingredientes">
+                  {{ ing.ingredient }} {{ ing.amount }} {{ ing.unit }} {{ ing.special }}
                 </li>
               </ul>
               <h3>Garnish</h3>
@@ -29,28 +30,30 @@
   </div>
 </template>
 <script>
+import axios from 'axios';
+import Loading from '../components/Loading.vue'
 export default {
   data() {
     return {
-      cocktail: { 
-        "name": "Vesper",
-        "glass": "martini",
-        "category": "Before Dinner Cocktail",
-        "ingredients": [
-          { "unit": "cl",
-            "amount": 6,
-            "ingredient": "Gin" },
-          { "unit": "cl",
-            "amount": 1.5,
-            "ingredient": "Vodka" },
-          { "unit": "cl",
-            "amount": 0.75,
-            "ingredient": "Lillet Blonde" }
-        ],
-        "garnish": "Lemon twist",
-        "preparation": "Shake and strain into a chilled cocktail glass." 
-      }
+      cocktail: {},
+      loading: true
     }
+  },
+  components: {
+    Loading
+  },
+  async mounted() {
+    const id = this.$route.params.id;
+    await axios
+    .get('http://localhost:3000/api/cocktails/'+id,  {headers: {'Content-Type': 'application/json'}})
+    .then(response => {
+      this.cocktail = response.data.cocktail
+    })
+    .catch(error => {
+      console.log(error)
+    });
+    console.log(this.cocktail)
+    this.loading = false
   },
 }
 </script>

@@ -39,11 +39,7 @@ export default {
   },
 }
 </script>
-<style>
-  header {
-    display: none !important;
-  }
-
+<style scoped>
   .logo-div{
     display: flex;
     flex-direction: column;

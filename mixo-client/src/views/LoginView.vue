@@ -6,35 +6,59 @@
           <h1>Welcome to</h1>
           <a href="/"><img src="/logo.png" alt="Logo mixo"/></a> 
         </div>
-        <form class="form-login-form" action="@login" method="post">
+        <div class="form-login-form">
           <div class="mb-3">
-            <label for="exampleFormControlInput1" class="form-label">Username or email</label>
-            <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" v-model="username" id="username" placeholder="username" required>
           </div>
           <div class="mb-3">
-            <label for="exampleFormControlInput1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleFormControlInput1" >
+            <label for="password" class="form-label">Password</label>
+            <input type="password" v-model="password" class="form-control" id="password" required>
           </div>
+          <p class="errors" v-if="error != ''">{{ this.error }}</p>
           <a href="/register" class="btn btn-link">¿Aún no tienes cuenta? Registrate</a>
-          <button type="submit" class="btn btn-primary">Login</button>
-        </form>
+          <button type="submit" :disabled="username == '' || password == ''" @click="login" class="btn btn-primary">Login</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script>
+import axios from 'axios'
 export default {
   data() {
     return {
+      username: '',
+      password: '',
+      error: '',
       publicPath: import.meta.env.BASE_URL,
+    }
+  },
+  methods: {
+    async login() {
+      await axios
+      .post('http://localhost:3000/api/login?username='+this.username+'&password='+this.password, {headers: {'Content-Type': 'application/json'}})
+      .then(response => {
+        if(response.status == 200){
+          var token = response.data.token
+          var admin = response.data.admin
+          localStorage.setItem('token', token)
+          localStorage.setItem('admin', admin)
+          localStorage.setItem('user', this.username)
+          this.$router.push("/");
+        }else{
+          this.error = response.data
+        }
+      }).catch(error => {
+        this.error = error.response.data
+        var password = document.getElementById("password");
+        password.value = '';
+      })
     }
   },
 }
 </script>
-<style>
-  header {
-    display: none !important;
-  }
+<style scoped>
 
   .logo-div{
     display: flex;
@@ -69,6 +93,12 @@ export default {
   .form-login-form {
     display: flex;
     flex-direction: column;
+  }
+
+  .errors {
+    color: red;
+    font-weight: bold;
+    margin: 0;
   }
 
   .form-login-form a {

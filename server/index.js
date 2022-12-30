@@ -3,8 +3,11 @@ var firestore = require('firebase/firestore')
 var getFirestore = firestore.getFirestore
 var collection = firestore.collection
 var express = require('express')
+const cors = require('cors')
 var app = express()
-app.use(express.json())
+app.use(express.json(), cors({
+  origin: '*'
+}))
 const swaggerUi = require('swagger-ui-express'),
 swaggerDocument = require('./swagger.json');
 const url = require('url')
@@ -37,6 +40,9 @@ const db = getFirestore(appFirebase);
 const cocktailsRef = collection(db, "cocktails")
 
 app.get('/api/firebase/load', checkTokenFirebase, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   try {
     var cocktail;
     for(i = 0; i < cocteles.length-1; i++){
@@ -62,29 +68,35 @@ app.get('/api/firebase/load', checkTokenFirebase, async function(pet, resp) {
 })
 
 app.post('/api/login', async function(pet, resp){
-    const queryParams = url.parse(pet.url, true).query
-    var user = {username: queryParams.username, password: queryParams.password}
-    
-    var q = firestore.query(collection(db, "users"), firestore.where("username", "==", user.username))
-    const querySnapshot = await firestore.getDocs(q);
-    
-    if(querySnapshot.docs[0] != undefined){
-      var u = querySnapshot.docs[0].data()
-      var dPassword = jwt.decode(u.password, secret)
-      if(u.username == user.username && dPassword == user.password){
-        resp.status(200)
-        resp.send({token: jwt.encode(user.username+user.password, secret)})
-      }else{
-        resp.status(401)
-        resp.send('Las credenciales no coinciden')
-      }
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const queryParams = url.parse(pet.url, true).query
+  var user = {username: queryParams.username, password: queryParams.password}
+  
+  var q = firestore.query(collection(db, "users"), firestore.where("username", "==", user.username))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    var u = querySnapshot.docs[0].data()
+    var dPassword = jwt.decode(u.password, secret)
+    if(u.username == user.username && dPassword == user.password){
+      resp.status(200)
+      resp.send({token: jwt.encode(user.username+user.password, secret), admin: u.isAdmin})
     }else{
-      resp.status(404)
-      resp.send('Usuario no encontrado')
+      resp.status(401)
+      resp.send('Las credenciales no coinciden')
     }
+  }else{
+    resp.status(404)
+    resp.send('Usuario no encontrado')
+  }
 })
 
 app.post('/api/register',async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var obj = pet.body
   var usuario = {username: obj.username, password: obj.password, email: obj.email}
   if(usuario.username != undefined){
@@ -116,7 +128,10 @@ app.post('/api/register',async function(pet, resp) {
   }
 })
 
-app.get('/api/cocktails', checkToken, async function(pet,resp) {
+app.get('/api/cocktails', async function(pet,resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
   var before = pet.body.before
   var after = pet.body.after
@@ -145,7 +160,10 @@ app.get('/api/cocktails', checkToken, async function(pet,resp) {
   }
 })
 
-app.get('/api/cocktails/:id', checkToken, async function(pet, resp) {
+app.get('/api/cocktails/:id', async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var id = Number(pet.params.id)
   var q = firestore.query(cocktailsRef, firestore.where("id", "==", id))
   const querySnapshot = await firestore.getDocs(q);
@@ -161,6 +179,9 @@ app.get('/api/cocktails/:id', checkToken, async function(pet, resp) {
 })
 
 app.put('/api/cocktails/:id', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var id = pet.params.id
   var doc = pet.body.document
   var cocktail = pet.body.cocktail
@@ -193,6 +214,9 @@ app.put('/api/cocktails/:id', checkToken, async function(pet, resp) {
 })
 
 app.delete('/api/cocktails/:id', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var id = pet.params.id
   var doc
 
@@ -221,6 +245,9 @@ app.delete('/api/cocktails/:id', checkToken, async function(pet, resp) {
 })
 
 app.get('/api/cocktail/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var name = pet.params.name
   var q = firestore.query(cocktailsRef, firestore.where("name", "==", name))
   const querySnapshot = await firestore.getDocs(q);
@@ -236,6 +263,9 @@ app.get('/api/cocktail/:name', checkToken, async function(pet, resp) {
 })
 
 app.put('/api/cocktail/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var name = pet.params.name
   var doc = pet.body.document
   var cocktail = pet.body.cocktail
@@ -268,6 +298,9 @@ app.put('/api/cocktail/:name', checkToken, async function(pet, resp) {
 })
 
 app.delete('/api/cocktail/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var name = pet.params.name
   var q = firestore.query(cocktailsRef, firestore.where("name", "==", name))
   const querySnapshot = await firestore.getDocs(q);
@@ -294,6 +327,9 @@ app.delete('/api/cocktail/:name', checkToken, async function(pet, resp) {
 })
 
 app.get('/api/cocktails/category/:category', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var cat = pet.params.category
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
   console.log(pet.body.limit)
@@ -325,6 +361,9 @@ app.get('/api/cocktails/category/:category', checkToken, async function(pet, res
 })
 
 app.get('/api/cocktails/ingredients/:ingredient', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   var ing = {ingredient: pet.params.ingredient}
   var limit = pet.body.limit != undefined ? pet.body.limit : 30
   var before = pet.body.before
