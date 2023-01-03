@@ -32,6 +32,9 @@ export default {
         document.getElementById('mixo-header').style.display = "none";
       }else{
         document.getElementById('mixo-header').style.display = "flex";
+        /*if(to.name == 'home'){
+          this.$route.params
+        }*/
       }
       if(localStorage.getItem('token') !== null){
         this.token = localStorage.getItem('token')

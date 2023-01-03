@@ -3,8 +3,8 @@
   <div v-if="!loading" class="container" style="margin-top: 128px">
     <div class="row">
       <div class="col-5 details-left">
-        <img class="details-img" src="/ambitious-creative-co-rick-barrett-Hw7hK-kYA-Q-unsplash.jpg" :alt="cocktail.name">
-        <a class="details-category" href="#">{{ cocktail.category }}</a>
+        <img class="details-img" :src="'/'+cocktail.name+'.jpg'" :alt="cocktail.name">
+        <a class="details-category" :href="'/cocktails/category/'+cocktail.category">{{ cocktail.category }}</a>
       </div>
       <div class="col-7">
         <h1>{{ cocktail.name }}</h1>
@@ -17,7 +17,7 @@
               <h3>Ingredientes</h3>
               <ul>
                 <li v-for="ing in cocktail.ingredientes">
-                  {{ ing.ingredient }} {{ ing.amount }} {{ ing.unit }} {{ ing.special }}
+                  {{ ing.ingredient }} {{ ing.label }} {{ ing.amount }}  {{ ing.unit }} {{ ing.special }}
                 </li>
               </ul>
               <h3>Garnish</h3>

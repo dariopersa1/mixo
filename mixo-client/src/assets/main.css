@@ -5,6 +5,30 @@
   overflow: hidden;
 }
 
+/* width */
+::-webkit-scrollbar {
+  width: 15px;
+  
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: white;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  border: 1px solid #f1f1f1; 
+  background: #212322; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #343736; 
+}
+
 a,
 .green {
   text-decoration: none;
