@@ -1,6 +1,6 @@
 <template>
   <header id="mixo-header">
-    <img alt="Mixo logo" class="logo" src="/logo.png" width="150" height="50" />
+    <img alt="Mixo logo" class="logo" @click="this.$router.push('/')" src="/logo.png" width="150" height="50" style="cursor: pointer"/>
     <nav>
       <RouterLink to="/">Home</RouterLink>
       <RouterLink v-if="token == ''" to="/login">Login</RouterLink>

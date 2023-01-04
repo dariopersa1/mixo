@@ -4,6 +4,7 @@ var getFirestore = firestore.getFirestore
 var collection = firestore.collection
 var express = require('express')
 const cors = require('cors')
+const request = require('request')
 var app = express()
 app.use(express.json(), cors({
   origin: '*'
@@ -62,6 +63,72 @@ app.get('/api/firebase/load', checkTokenFirebase, async function(pet, resp) {
     resp.send('Load database complete')
   } catch (e) {
     console.error("Error adding document: ", e);
+    resp.status(404)
+    resp.send('Something went wrong')
+  }
+})
+
+app.get('/api/firebase/load/ingredients', checkTokenFirebase, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  try {
+    var cocktail
+    var ingredients = []
+    for(var i = 0; i < cocteles.length-1; i++){
+      cocktail = cocteles[i]
+      request.get('https://www.thecocktaildb.com/api/json/v1/1/search.php?s='+cocktail.name.toLowerCase(), (error, response, body) => {
+        if(error){
+          console.log(error)
+        }
+        var c = JSON.parse(body)
+        if(c.drinks != null){
+          var auxPreparation = c.drinks[0].strInstructions
+          var auxCategory = c.drinks[0].strCategory
+          cocktail.preparation = auxPreparation
+          cocktail.category = auxCategory
+          cocteles[i] = cocktail
+        }
+      })
+
+      cocktail.ingredients.forEach(async (ing) => {
+        if(ing.ingredient != undefined){
+          if(!ingredients.includes(ing.ingredient)){
+            request.get('https://www.thecocktaildb.com/api/json/v1/1/search.php?i='+ing.ingredient, async (error, response, body) => {
+              if(error){
+                console.log(error)
+              }
+              var c = JSON.parse(body)
+              if(c.ingredients != null){
+                var aux = c.ingredients[0]
+                const docRef = await firestore.addDoc(collection(db, "ingredients"), {
+                  name: ing.ingredient,
+                  description: aux.strDescription,
+                  type: aux.strType,
+                  alcohol: aux.strAlcohol,
+                  abv: aux.strABV
+                })
+                console.log('Ingrediente añadido con éxito: ', docRef.id)
+              }else{
+                const docRef = firestore.addDoc(collection(db, "ingredients"), {
+                  name: ing.ingredient,
+                  description: '',
+                  type: '',
+                  alcohol: '',
+                  abv: ''
+                })
+                console.log('Ingrediente añadido sin datos: ', docRef.id)
+              }
+            })
+          }
+          ingredients.push(ing.ingredient)
+        }
+      })
+    }
+    resp.status(200)
+    resp.send('Load database ingredients complete')
+  } catch (e) {
+    console.error("Error: ", e);
     resp.status(404)
     resp.send('Something went wrong')
   }
@@ -132,7 +199,7 @@ app.get('/api/cocktails', async function(pet,resp) {
   resp.setHeader('Access-Control-Allow-Origin', '*');
   resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  var limit = pet.body.limit != undefined ? pet.body.limit : 76
+  var limit = pet.body.limit != undefined ? pet.body.limit : 30
   var before = pet.body.before
   var after = pet.body.after
   const last = await getLastId()
@@ -442,7 +509,7 @@ async function getLastId() {
   return querySnapshot.docs[0].data().id
 }
 
-const cocteles = [
+var cocteles = [
   { "name": "Vesper",
     "glass": "martini",
     "category": "Before Dinner Cocktail",
