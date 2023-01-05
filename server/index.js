@@ -195,6 +195,102 @@ app.post('/api/register',async function(pet, resp) {
   }
 })
 
+app.get('/api/admin/cocktails', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var cocktails = []
+  var query = firestore.query(collection(db, "cocktails"), orderBy("id"))
+  var querySnapshot = await firestore.getDocs(query)
+  querySnapshot.forEach((doc) => {
+    cocktails.push(doc.data())
+  })
+  cocktails.sort((a, b) => (a.id > b.id) ? 1 : ((a.id < b.id) ? -1 : 0))
+  if(cocktails.length > 0){
+    resp.status(200)
+    resp.send({data: cocktails})
+  }else{
+    resp.status(404)
+    resp.send("No cocktails found")
+  }
+})
+
+app.get('/api/admin/categories', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var categories = []
+  var query = firestore.query(collection(db, "category"))
+  var querySnapshot = await firestore.getDocs(query)
+  querySnapshot.forEach((doc) => {
+    categories.push(doc.data())
+  })
+  if(categories.length > 0){
+    resp.status(200)
+    resp.send({data: categories})
+  }else{
+    resp.status(404)
+    resp.send("No categories found")
+  }
+})
+
+app.get('/api/admin/users', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var users = []
+  var query = firestore.query(collection(db, "users"))
+  var querySnapshot = await firestore.getDocs(query)
+  querySnapshot.forEach((doc) => {
+    users.push(doc.data())
+  })
+  if(users.length > 0){
+    resp.status(200)
+    resp.send({data: users})
+  }else{
+    resp.status(404)
+    resp.send("No users found")
+  }
+})
+
+app.get('/api/admin/glass', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var glass = []
+  var query = firestore.query(collection(db, "glass"))
+  var querySnapshot = await firestore.getDocs(query)
+  querySnapshot.forEach((doc) => {
+    glass.push(doc.data())
+  })
+  if(glass.length > 0){
+    resp.status(200)
+    resp.send({data: glass})
+  }else{
+    resp.status(404)
+    resp.send("No glass found")
+  }
+})
+
+app.get('/api/admin/ingredients', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var ingredients = []
+  var query = firestore.query(collection(db, "ingredients"))
+  var querySnapshot = await firestore.getDocs(query)
+  querySnapshot.forEach((doc) => {
+    ingredients.push(doc.data())
+  })
+  if(ingredients.length > 0){
+    resp.status(200)
+    resp.send({data: ingredients})
+  }else{
+    resp.status(404)
+    resp.send("No ingredients found")
+  }
+})
+
 app.get('/api/cocktails', async function(pet,resp) {
   resp.setHeader('Access-Control-Allow-Origin', '*');
   resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');

@@ -5,6 +5,7 @@
       <RouterLink to="/">Home</RouterLink>
       <RouterLink v-if="token == ''" to="/login">Login</RouterLink>
       <RouterLink v-if="token == ''" to="/register">Registro</RouterLink>
+      <a href="/admin" v-if="admin">Administración</a>
       <a href="/" v-if="token != ''" @click="logout">Cerrar sesión</a>
     </nav>
   </header>
@@ -24,6 +25,9 @@ export default {
       localStorage.removeItem('admin')
       this.token = ''
       this.admin = false
+    },
+    getAdmin(){
+      this.$router.push("/admin")
     }
   },
   watch: {
@@ -32,9 +36,6 @@ export default {
         document.getElementById('mixo-header').style.display = "none";
       }else{
         document.getElementById('mixo-header').style.display = "flex";
-        /*if(to.name == 'home'){
-          this.$route.params
-        }*/
       }
       if(localStorage.getItem('token') !== null){
         this.token = localStorage.getItem('token')

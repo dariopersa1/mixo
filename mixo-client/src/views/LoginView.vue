@@ -45,6 +45,7 @@ export default {
           localStorage.setItem('token', token)
           localStorage.setItem('admin', admin)
           localStorage.setItem('user', this.username)
+          console.log(token, admin)
           this.$router.push("/");
         }else{
           this.error = response.data

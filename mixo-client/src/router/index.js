@@ -41,6 +41,11 @@ const router = createRouter({
       path: '/cocktail/:id',
       name: 'cocktail',
       component: () => import('../views/CocktailView.vue')
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('../views/AdminView.vue')
     }
   ]
 })
