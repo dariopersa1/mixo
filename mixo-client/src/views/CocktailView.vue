@@ -7,10 +7,12 @@
         <a class="details-category" :href="'/cocktails/category/'+cocktail.category">{{ cocktail.category }}</a>
       </div>
       <div class="col-7">
-        <h1>{{ cocktail.name }}</h1>
-        <div class="row">
+        <h1 style="font-style: italic;">{{ cocktail.name }}</h1>
+        <div class="row" style="margin-top: 16px">
           <div class="col-7">
-            <p>{{ cocktail.preparation }}</p>
+            <ol style="padding-inline-start: 20px">
+              <li v-for="step in cocktail.preparation" style="font-size: 1.25rem">{{ step }}</li>
+            </ol>
           </div>
           <div class="col-5">
             <div class="ingredientes">
@@ -48,6 +50,9 @@ export default {
     .get('http://localhost:3000/api/cocktails/'+id,  {headers: {'Content-Type': 'application/json'}})
     .then(response => {
       this.cocktail = response.data.cocktail
+      var prep = this.cocktail.preparation
+      var steps = prep.split('. ')
+      this.cocktail.preparation = steps
     })
     .catch(error => {
       console.log(error)
@@ -66,6 +71,7 @@ export default {
     max-width: 450px;
     max-height: 600px;
     margin-bottom: 32px;
+    border-radius: 15px;
   }
   .details-category {
     width: fit-content;

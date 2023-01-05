@@ -29,7 +29,7 @@
           <td v-if="currentTab == 'glass' || currentTab == 'categories'" scope="row">{{ element.name }}</td>
           <td v-if="currentTab == 'users'">{{ element.username }}</td>
           <td v-if="currentTab == 'users'">{{ element.email }}</td>
-          <td v-if="currentTab == 'users'">{{ element.admin }}</td>
+          <td v-if="currentTab == 'users'">{{ element.isAdmin }}</td>
           <td v-if="currentTab == 'ingredients'">{{ element.name }}</td>
           <td v-if="currentTab == 'ingredients'">{{ element.type }}</td>
           <td v-if="currentTab == 'ingredients'" class="long-text">{{ element.description }}</td>
@@ -38,7 +38,7 @@
           <th v-if="currentTab == 'cocktails'" scope="row">{{ element.id }}</th>
           <td v-if="currentTab == 'cocktails'">{{ element.name }}</td>
           <td v-if="currentTab == 'cocktails'" class="long-text">{{ element.preparation }}</td>
-          <td v-if="currentTab == 'cocktails'">{{ element.ingredientes.length }}</td>
+          <td v-if="currentTab == 'cocktails'">{{ element.ingredientes?.length }}</td>
           <td v-if="currentTab == 'cocktails'">{{ element.category }}</td>
           <td v-if="currentTab == 'cocktails'">{{ element.glass }}</td>
         </tr>

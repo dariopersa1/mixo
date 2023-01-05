@@ -17,7 +17,7 @@
           </div>
           <p class="errors" v-if="error != ''">{{ this.error }}</p>
           <a href="/register" class="btn btn-link">¿Aún no tienes cuenta? Registrate</a>
-          <button type="submit" :disabled="username == '' || password == ''" @click="login" class="btn btn-primary">Login</button>
+          <button type="submit" :disabled="username == '' || password == ''" @click="login" class="btn btn-primary" style="cursor: pointer">Login</button>
         </div>
       </div>
     </div>
@@ -42,9 +42,10 @@ export default {
         if(response.status == 200){
           var token = response.data.token
           var admin = response.data.admin
+          var user = response.data.user
           localStorage.setItem('token', token)
           localStorage.setItem('admin', admin)
-          localStorage.setItem('user', this.username)
+          localStorage.setItem('user', user)
           console.log(token, admin)
           this.$router.push("/");
         }else{

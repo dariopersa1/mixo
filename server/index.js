@@ -148,8 +148,20 @@ app.post('/api/login', async function(pet, resp){
     var u = querySnapshot.docs[0].data()
     var dPassword = jwt.decode(u.password, secret)
     if(u.username == user.username && dPassword == user.password){
+      var f = firestore.query(collection(db, "users/"+querySnapshot.docs[0].id+"/favs"))
+      const favs = await firestore.getDocs(f)
+      var userFavs = []
+      favs.docs.forEach(doc => {
+        userFavs.push(doc.data().cocktail)
+      })
+      var auxUser = {
+        username: u.username,
+        email: u.email,
+        isAdmin: u.isAdmin,
+        favs: userFavs
+      }
       resp.status(200)
-      resp.send({token: jwt.encode(user.username+user.password, secret), admin: u.isAdmin})
+      resp.send({token: jwt.encode(user.username+user.password, secret), admin: u.isAdmin, user: auxUser})
     }else{
       resp.status(401)
       resp.send('Las credenciales no coinciden')
@@ -242,7 +254,12 @@ app.get('/api/admin/users', checkToken, async function(pet, resp) {
   var query = firestore.query(collection(db, "users"))
   var querySnapshot = await firestore.getDocs(query)
   querySnapshot.forEach((doc) => {
-    users.push(doc.data())
+    var auxUser = {
+      username: doc.data().username,
+      email: doc.data().email,
+      isAdmin: doc.data().isAdmin
+    }
+    users.push(auxUser)
   })
   if(users.length > 0){
     resp.status(200)
