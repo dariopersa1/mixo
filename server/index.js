@@ -207,6 +207,68 @@ app.post('/api/register',async function(pet, resp) {
   }
 })
 
+app.post('/api/user/:username/favs/:cocktail', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  const username = pet.params.username
+  const cocktail = parseInt(pet.params.cocktail)
+  var q = firestore.query(collection(db, "users"), firestore.where("username", "==", username))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    try{
+      const docRef = firestore.addDoc(collection(db, "users/"+querySnapshot.docs[0].id+"/favs"), {
+        cocktail: cocktail
+      });
+      resp.status(200)
+      resp.send(docRef.id)
+    }catch(e) {
+      resp.status(403)
+      resp.send('Algo salió mal', e)
+    }
+  }else{
+    resp.status(404)
+    resp.send('Usuario no encontrado')
+  }
+})
+
+app.delete('/api/user/:username/favs/:cocktail', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  const username = pet.params.username
+  const cocktail = parseInt(pet.params.cocktail)
+  var q = firestore.query(collection(db, "users"), firestore.where("username", "==", username))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    var f = firestore.query(collection(db, "users/"+querySnapshot.docs[0].id+"/favs"))
+    const favs = await firestore.getDocs(f)
+    var found = false
+    favs.docs.forEach(async doc => {
+      if(doc.data().cocktail == cocktail){
+        found = true
+        const ref = firestore.doc(db, "users/"+querySnapshot.docs[0].id+"/favs", doc.id)
+        await firestore.deleteDoc(ref)
+      }
+    })
+
+    if(found) {
+      resp.status(200)
+      resp.send("Borrado con éxito")
+    }else{
+      resp.status(404)
+      resp.send("Cocktail " + cocktail + " no existe")
+    }
+  }else{
+    resp.status(404)
+    resp.send("Usuario " + username + " no existe")
+  }
+})
+
 app.get('/api/admin/cocktails', checkToken, async function(pet, resp) {
   resp.setHeader('Access-Control-Allow-Origin', '*');
   resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');

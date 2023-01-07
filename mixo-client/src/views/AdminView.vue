@@ -22,6 +22,7 @@
       <thead>
         <tr>
           <th scope="col" v-for="c in columns">{{c}}</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -41,9 +42,13 @@
           <td v-if="currentTab == 'cocktails'">{{ element.ingredientes?.length }}</td>
           <td v-if="currentTab == 'cocktails'">{{ element.category }}</td>
           <td v-if="currentTab == 'cocktails'">{{ element.glass }}</td>
+          <td style="display: flex"><button @click="editItem(element)" class="btn btn-outline-primary" style="margin-right: 8px">Editar</button> <button @click="deleteItem(element)" class="btn btn-danger">Borrar</button></td>
         </tr>
       </tbody>
     </table>
+    <div>
+      <b-modal v-model="modalShow">Hello From Modal!</b-modal>
+    </div>
   </div>
 </template>
 <script>
@@ -53,10 +58,17 @@ export default {
     return {
       currentTab: null,
       columns: [],
-      data: []
+      data: [],
+      modalShow: false
     }
   },
   methods: {
+    editItem(element) {
+      this.modalShow = !this.modalShow
+    },
+    deleteItem(element) {
+
+    },
     async getData(tab) {
       if(this.currentTab != tab){
         var current = document.getElementById(this.currentTab)

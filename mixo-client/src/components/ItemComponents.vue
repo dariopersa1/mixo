@@ -4,7 +4,10 @@
         <div class="card" v-for="cocktail in cocktails" style="width: 14rem;">
           <img :src="'/'+cocktail.name+'.jpg'" class="card-img-top" width="14rem" alt="cocktail" @click="details(cocktail.id)">
           <div class="card-body">
-            <h4 class="card-title" @click="details(cocktail.id)">{{cocktail.name}}</h4>
+            <div class="card-title-container">
+              <h4 class="card-title" @click="details(cocktail.id)">{{cocktail.name}}</h4>
+              <img v-if="auth" class="fav-icon" @click="changeFav(cocktail.id)" :src="user.favs.includes(cocktail.id) ? '/fav.png' : '/not-fav.png'" alt="Fav icon">
+            </div>
             <a :href="'/cocktails/category/'+cocktail.category" class="card-link" v-if="auth && cocktail.category != 'No category provided'">{{ cocktail.category }}</a>
             <p class="card-text" v-if="!auth && cocktail.category != 'No category provided'">{{ cocktail.category }}</p>
           </div>
@@ -20,20 +23,58 @@ export default {
       cocktails: [],
       category: '',
       ingredient: '',
-      auth: false
+      auth: false,
+      user: {},
+      token: ''
     }
   },
   methods: {
     details(id) {
       this.$router.push("/cocktail/"+id);
     },
+    async changeFav(cocktail) {
+      if(this.user.favs.includes(cocktail)){
+        console.log('Remove fav')
+        const index = this.user.favs.indexOf(cocktail)
+        if(index > -1){
+          this.user.favs.splice(index, 1)
+          await axios
+          .delete('http://localhost:3000/api/user/'+this.user.username+'/favs/'+cocktail,  {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}`}})
+          .then(response => {
+            console.log(response.data)
+          })
+          .catch(error => {
+            console.log(error)
+          })
+        }else{
+          console.log('Elemento a eliminar de favoritos no está en favoritos', index)
+        }
+      }else{
+        console.log('Add fav')
+        this.user.favs.push(cocktail)
+        localStorage.removeItem('user')
+        localStorage.setItem('user', JSON.stringify(this.user))
+        await axios
+        .post('http://localhost:3000/api/user/'+this.user.username+'/favs/'+cocktail, {}, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}`}})
+        .then(response => {
+          console.log(response.data)
+        })
+        .catch(error => {
+          console.log(error)
+        })
+      }
+    },
     async getCocktails() {
       this.cocktails.length = 0
       if(localStorage.getItem('token') != null){
-      this.auth = true
+        this.auth = true
+        this.user = JSON.parse(localStorage.getItem('user'))
+        this.token = localStorage.getItem('token')
+        console.log(this.token)
       }else{
         this.auth = false
       }
+      console.log(localStorage.getItem('user'))
       if(!this.auth || (!this.$route.params.category && !this.$route.params.ingredient)){
         console.log('No category')
         await axios
@@ -109,8 +150,19 @@ export default {
     max-height: 400px;
   }
 
-  .card-title {
+  .card-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 16px;
+  }
+
+  .card-title {
+    margin: 0;
+  }
+
+  .fav-icon {
+    max-height: 40px;
   }
 
   .card-link {

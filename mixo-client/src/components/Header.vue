@@ -23,6 +23,7 @@ export default {
     logout() {
       localStorage.removeItem('token')
       localStorage.removeItem('admin')
+      localStorage.removeItem('user')
       this.token = ''
       this.admin = false
     },

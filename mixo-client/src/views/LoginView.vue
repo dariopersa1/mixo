@@ -43,10 +43,10 @@ export default {
           var token = response.data.token
           var admin = response.data.admin
           var user = response.data.user
+          console.log(user)
           localStorage.setItem('token', token)
           localStorage.setItem('admin', admin)
-          localStorage.setItem('user', user)
-          console.log(token, admin)
+          localStorage.setItem('user', JSON.stringify(user))
           this.$router.push("/");
         }else{
           this.error = response.data
