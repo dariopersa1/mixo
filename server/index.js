@@ -663,7 +663,7 @@ app.get('/api/cocktails', async function(pet,resp) {
   resp.setHeader('Access-Control-Allow-Origin', '*');
   resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  var limit = pet.body.limit != undefined ? pet.body.limit : 30
+  var limit = pet.body.limit != undefined ? pet.body.limit : 32
   var before = pet.body.before
   var after = pet.body.after
   const last = await getLastId()
