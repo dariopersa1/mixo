@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <h1 v-if="action == 'new'">{{ this.action }} {{ title }} </h1>
-    <h1 v-if="action == 'edit'">{{ this.action }} {{ title }} {{ item }}</h1>
-    <div class="form">
+    <h1 v-if="action == 'new'">New {{ title }} </h1>
+    <h1 v-if="action == 'edit'">Edit {{ title }} {{ item }}</h1>
+    <div class="form" v-if="title == 'cocktails'">
       <div class="mb-3">
         <label for="name" class="form-label">Name</label>
         <input type="text" class="form-control" v-model="name" id="name" placeholder="Name" required>
@@ -15,7 +15,7 @@
         <label for="category" class="form-label">Category</label>
         <select v-model="cocktail.category" class="form-select form-select-lg mb-3" id="category" aria-label=".form-select-lg example">
           <option selected>No category provided</option>
-          <option v-for="c in categories" :value="c">{{ c.name }}</option>
+          <option v-for="c in categories" :value="c.name">{{ c.name }}</option>
         </select>
       </div>
       <div class="mb-3" style="display: flex; flex-direction: column">
@@ -32,20 +32,70 @@
       <div class="mb-3">
         <label for="ingredient" class="form-label">Ingredients</label>
         <div id="ingredients-input">
-          <div class="input-group" style="margin-bottom: 16px">
+          <div class="input-group" v-for="(ing, index) in ingredientes" style="margin-bottom: 16px">
             <span class="input-group-text">Ingredient, amount, units</span>
-            <input type="text" name="ingredient[]" aria-label="Ingredient" class="form-control" placeholder="Vodka">
-            <input type="number" name="ingredient-amount[]" aria-label="Amount" class="form-control" placeholder="5">
-            <input type="text" name="ingredient-units[]" aria-label="Units" class="form-control" placeholder="cl">
-            <span class="input-group-text" id="addon-wrapping" @click="deleteIngredient(this)" style="color: red; background-color: rgb(255, 190, 190);">&minus;</span>
+            <input type="text" name="ingredient[]" aria-label="Ingredient" class="form-control" placeholder="Vodka" v-model="ing.ingredient">
+            <input type="number" name="ingredient-amount[]" aria-label="Amount" class="form-control" placeholder="5" v-model="ing.amount">
+            <input type="text" name="ingredient-units[]" aria-label="Units" class="form-control" placeholder="cl" v-model="ing.unit">
+            <span class="input-group-text" id="addon-wrapping" @click="deleteIngredient(index)" style="color: red; background-color: rgb(255, 190, 190); cursor: pointer;">&minus;</span>
           </div>
           <button class="btn btn-outline-primary" @click="addIngredient" id="btn-add-ingredient">Add Ingredient</button>
         </div>
       </div>
-      <div class="buttons">
-        <button class="btn btn-primary" style="margin-right: 8px;" @click="save">Guardar</button>
-        <button class="btn btn-danger">Cancelar</button>
+    </div>
+
+    <div class="form" v-if="title == 'categories' || title == 'glass'">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" v-model="name" id="name" placeholder="Name" required>
       </div>
+    </div>
+
+    <div class="form" v-if="title == 'users'">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" v-model="user.username" class="form-control" id="username" placeholder="Name">
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="text" v-model="user.email" class="form-control" id="email" placeholder="name@example.com">
+      </div>
+      <div class="form-check">
+        <input v-model="user.isAdmin" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+        <label class="form-check-label" for="flexCheckDefault">
+          Admin
+        </label>
+      </div>
+    </div>
+
+    <div class="form" v-if="title == 'ingredients'">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" v-model="name" id="name" placeholder="Name" required>
+      </div>
+      <div class="mb-3">
+        <label for="type" class="form-label">Type</label>
+        <input type="text" class="form-control" v-model="ingredient.type" id="type" placeholder="Spirit" required>
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control" v-model="ingredient.description" id="description" placeholder="This ingredient is..." required>
+      </div>
+      <div class="form-check">
+        <input v-model="ingredient.alcohol" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+        <label class="form-check-label" for="flexCheckDefault">
+          Alcohol
+        </label>
+      </div>
+      <div class="mb-3">
+        <label for="abv" class="form-label">ABV</label>
+        <input type="number" class="form-control" v-model="name" id="abv" placeholder="40" required>
+      </div>
+    </div>
+
+    <div class="buttons" style="margin-bottom: 32px">
+      <button class="btn btn-primary" style="margin-right: 8px;" @click="save">Guardar</button>
+      <button class="btn btn-danger" @click="this.$router.go(-1)">Cancelar</button>
     </div>
   </div>
 </template>
@@ -55,6 +105,7 @@ export default {
   data() {
     return {
       action: '',
+      docRef: '',
       title: '',
       item: '',
       name: '',
@@ -73,88 +124,132 @@ export default {
         category: '',
         garnish: '',
         glass: '',
-        ingredients: [],
         preparation: ''
       },
       glasses: [],
-      categories: []
+      categories: [],
+      ingredientes: [
+        {
+          ingredient: '',
+          label: '',
+          amount: 0,
+          unit: ''
+        }
+      ]
     }
   },
   methods: {
     addIngredient() {
-      var ingredientes = document.getElementsByName('ingredient[]')
-      var parentIngredientes = document.getElementById('ingredients-input')
-      var addButton = document.getElementById('btn-add-ingredient')
-      if(ingredientes[ingredientes.length-1].value == ''){
+      if(this.ingredientes[this.ingredientes.length-1].ingredient == ''){
         return false
       }
 
-      let div = document.createElement("div")
-      div.setAttribute("class", 'input-group')
-      div.setAttribute("style", 'margin-bottom: 16px')
-
-      let description = document.createElement("span")
-      description.setAttribute("class", "input-group-text")
-      let descText = document.createTextNode("Ingredient, amount, units")
-      description.appendChild(descText)
-
-      let ing = document.createElement("input")
-      ing.setAttribute("class", "form-control")
-      ing.setAttribute("type", "text")
-      ing.setAttribute("name", "ingredient[]")
-      ing.setAttribute("placeholder", "Vodka")
-
-      let amount = document.createElement("input")
-      amount.setAttribute("class", "form-control")
-      amount.setAttribute("type", "number")
-      amount.setAttribute("name", "ingredient-amount[]")
-      amount.setAttribute("placeholder", "5")
-
-      let units = document.createElement("input")
-      units.setAttribute("class", "form-control")
-      units.setAttribute("type", "text")
-      units.setAttribute("name", "ingredient-units[]")
-      units.setAttribute("placeholder", "cl")
-
-      let minus = document.createElement("span");
-      minus.setAttribute("onclick", "deleteIngredient(this)");
-      minus.setAttribute("class", "input-group-text")
-      minus.setAttribute("style", "color: red; background-color: rgb(255, 190, 190);")
-      let minusText = document.createTextNode("-");
-      minus.appendChild(minusText)
-
-      parentIngredientes.insertBefore(div, addButton)
-
-      div.appendChild(description)
-      div.appendChild(ing)
-      div.appendChild(amount)
-      div.appendChild(units)
-      div.appendChild(minus)
+      this.ingredientes.push({
+        ingredient: '',
+        amount: 0,
+        units: ''
+      })
     },
-    deleteIngredient(element) {
-      var ingredientes = document.getElementsByName('ingredient[]')
-
-      if(ingredientes.length > 1){
-        element.parentElement.remove()
+    deleteIngredient(index) {
+      if(this.ingredientes.length > 1){
+        this.ingredientes.splice(index, 1)
       }
     },
     save() {
       if(this.title == 'cocktails'){
-
-        var cocktail = {
-          id: this.item,
-          name: this.name,
-          preparation: this.cocktail.preparation,
-          category: this.cocktail.category,
-          garnish: this.cocktail.garnish,
-          glass: this.cocktail.glass,
-          ingredients: this.cocktail.ingredients
+        if(this.action == 'edit'){
+          var cocktail = {
+            id: this.item,
+            name: this.name,
+            preparation: this.cocktail.preparation,
+            category: this.cocktail.category,
+            garnish: this.cocktail.garnish,
+            glass: this.cocktail.glass,
+            ingredientes: this.ingredientes
+          }
+          axios
+          .put('http://localhost:3000/api/cocktails/'+this.item, {document: this.docRef, cocktail: cocktail},{headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+          .then(response => console.log(response))
+          .catch(error => console.log(error))
+        }else{
+          var cocktail = {
+            name: this.name,
+            preparation: this.cocktail.preparation,
+            category: this.cocktail.category,
+            garnish: this.cocktail.garnish,
+            glass: this.cocktail.glass,
+            ingredientes: this.ingredientes
+          }
+          axios
+          .post('http://localhost:3000/api/cocktails/', {user: JSON.parse(localStorage.getItem('user')).username, cocktail: cocktail},{headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+          .then(response => console.log(response))
+          .catch(error => console.log(error))
         }
+
+        this.$router.go(-1)
       }
     },
-    getItem(type, id) {
+    async getItem(type, id) {
       this.title = type
       this.item = id
+      if(this.title == 'cocktails'){
+        await axios
+        .get('http://localhost:3000/api/cocktails/'+this.item, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+        .then(response => {
+          const c = response.data.cocktail
+          this.name = c.name
+          this.cocktail.preparation = c.preparation
+          this.cocktail.category = c.category
+          this.cocktail.garnish = c.garnish
+          this.cocktail.glass = c.glass
+          this.ingredientes = c.ingredientes
+          this.docRef = response.data.document
+        })
+        .catch(error => console.log(error))
+      }else if(this.title == 'categories'){
+        await axios
+        .get('http://localhost:3000/api/admin/category/'+this.item, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+        .then(response => {
+          const c = response.data.category
+          this.name = c.name
+          this.docRef = response.data.document
+        })
+        .catch(error => console.log(error))
+      }else if(this.title == 'glass') {
+        await axios
+        .get('http://localhost:3000/api/admin/glass/'+this.item, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+        .then(response => {
+          const g = response.data.glass
+          this.name = g.name
+          this.docRef = response.data.document
+        })
+        .catch(error => console.log(error))
+      }else if(this.title == 'users') {
+        await axios
+        .get('http://localhost:3000/api/admin/users/'+this.item, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+        .then(response => {
+          const u = response.data.user
+          this.user.username = u.username
+          this.user.email = u.email
+          this.user.isAdmin = u.isAdmin
+          this.docRef = response.data.document
+        })
+        .catch(error => console.log(error))
+      }else if(this.title == 'ingredient'){
+        await axios
+        .get('http://localhost:3000/api/admin/ingredient/'+this.item, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+        .then(response => {
+          const ingredient = response.data.ingredient
+          this.name = ingredient.name
+          this.ingredient.type = ingredient.type
+          this.ingredient.description = ingredient.description
+          this.ingredient.alcohol = ingredient.alcohol
+          this.ingredient.abv = ingredient.abv
+          this.docRef = response.data.document
+        })
+      }else{
+        this.$router.push('/')
+      }
     },
     async getGlasses(){
       await axios

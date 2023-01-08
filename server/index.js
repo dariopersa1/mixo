@@ -309,6 +309,176 @@ app.get('/api/admin/categories', checkToken, async function(pet, resp) {
   }
 })
 
+app.get('/api/admin/category/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var name = pet.params.name
+  var q = firestore.query(collection(db, "categories"), firestore.where("name", "==", name))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    var cocktail = querySnapshot.docs[0].data()
+    resp.status(200)
+    resp.send({category: cocktail, document: querySnapshot.docs[0].id})
+  }else{
+    resp.status(404)
+    resp.send('Category ' + name + ', no encontrado')
+  }
+})
+
+app.get('/api/admin/glass/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var name = pet.params.name
+  var q = firestore.query(collection(db, "glass"), firestore.where("name", "==", name))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    var cocktail = querySnapshot.docs[0].data()
+    resp.status(200)
+    resp.send({glass: cocktail, document: querySnapshot.docs[0].id})
+  }else{
+    resp.status(404)
+    resp.send('Glass ' + name + ', no encontrado')
+  }
+})
+
+app.get('/api/admin/users/:username', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var username = pet.params.username
+  var q = firestore.query(collection(db, "users"), firestore.where("username", "==", username))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    var cocktail = querySnapshot.docs[0].data()
+    resp.status(200)
+    resp.send({user: cocktail, document: querySnapshot.docs[0].id})
+  }else{
+    resp.status(404)
+    resp.send('Username ' + username + ', no encontrado')
+  }
+})
+
+app.get('/api/admin/ingredient/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var name = pet.params.name
+  var q = firestore.query(collection(db, "ingredients"), firestore.where("name", "==", name))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    var cocktail = querySnapshot.docs[0].data()
+    resp.status(200)
+    resp.send({ingredient: cocktail, document: querySnapshot.docs[0].id})
+  }else{
+    resp.status(404)
+    resp.send('Ingredient ' + name + ', no encontrado')
+  }
+})
+
+app.post('/api/admin/categories/', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var category = pet.body.category
+  try {
+    const docRef = await firestore.addDoc(collection(db, "category"), {
+      name: category.name
+    });
+    resp.status(200)
+    resp.send('Category added succesfully: '+docRef.id)
+  }catch(e){
+    console.error("Error adding document: ", e);
+    resp.status(404)
+    resp.send('Something went wrong')
+  }
+})
+
+app.put('/api/admin/categories/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var name = name
+  var category = pet.body.category
+  var categorydb
+  
+  var q = firestore.query(collection(db, "category"), firestore.where("name", "==", name))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    doc = querySnapshot.docs[0].id
+    categorydb = querySnapshot.docs[0].data()
+  }else{
+    resp.status(404)
+    resp.send("Category " + name + " no existe")
+  }
+  
+  const ref = firestore.doc(db, "category", doc)
+  await updateDoc(ref, {
+    name: category.name
+  })
+  resp.status(200)
+  resp.send("Actualizado con éxito")
+})
+
+app.post('/api/admin/glass/', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var glass = pet.body.glass
+  try {
+    const docRef = await firestore.addDoc(collection(db, "glass"), {
+      name: glass.name
+    });
+    resp.status(200)
+    resp.send('Glass added succesfully: '+docRef.id)
+  }catch(e){
+    console.error("Error adding document: ", e);
+    resp.status(404)
+    resp.send('Something went wrong')
+  }
+})
+
+app.put('/api/admin/glass/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var name = name
+  var glass = pet.body.glass
+  var glassdb
+  
+  var q = firestore.query(collection(db, "glass"), firestore.where("name", "==", name))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    doc = querySnapshot.docs[0].id
+    glassdb = querySnapshot.docs[0].data()
+  }else{
+    resp.status(404)
+    resp.send("Glass " + name + " no existe")
+  }
+  
+  const ref = firestore.doc(db, "glass", doc)
+  await updateDoc(ref, {
+    name: glass.name
+  })
+  resp.status(200)
+  resp.send("Actualizado con éxito")
+})
+
 app.get('/api/admin/users', checkToken, async function(pet, resp) {
   resp.setHeader('Access-Control-Allow-Origin', '*');
   resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -332,6 +502,69 @@ app.get('/api/admin/users', checkToken, async function(pet, resp) {
     resp.send("No users found")
   }
 })
+
+app.post('/api/admin/users', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var usuario = pet.body.user
+  if(usuario.username != undefined){
+    var q = firestore.query(collection(db, "users"), firestore.where("username", "==", usuario.username))
+    const querySnapshot = await firestore.getDocs(q);
+    
+    if(querySnapshot.docs[0] == undefined){
+      try{
+        const docRef = await firestore.addDoc(collection(db, "users"), {
+          username: usuario.username,
+          password: jwt.encode(usuario.password, secret),
+          email: usuario.email,
+          isAdmin: false
+        });
+        
+        resp.status(200)
+        resp.send('Usuario registrado con éxito', docRef)
+      }catch(e) {
+        resp.status(403)
+        resp.send('Algo salió mal', e)
+      }
+    }else{
+      resp.status(403)
+      resp.send('Usuario ya existe')
+    }
+    
+  }else{
+    resp.status(404)
+    resp.send('Usuario undefined')
+  }
+})
+
+app.put('/api/admin/users/:username', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  var username = pet.params.username
+  var usuario = pet.body.user
+  var userdb
+  var q = firestore.query(collection(db, "users"), firestore.where("username", "==", username))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    doc = querySnapshot.docs[0].id
+    userdb = querySnapshot.docs[0].data()
+  }else{
+    resp.status(404)
+    resp.send("User " + username + " no existe")
+  }
+  
+  const ref = firestore.doc(db, "users", doc)
+  await updateDoc(ref, {
+    username: usuario.username,
+    email: usuario.email,
+    isAdmin: usuario.isAdmin
+  })
+  resp.status(200)
+  resp.send("Actualizado con éxito")
+}) 
 
 app.get('/api/admin/glass', checkToken, async function(pet, resp) {
   resp.setHeader('Access-Control-Allow-Origin', '*');
@@ -369,6 +602,61 @@ app.get('/api/admin/ingredients', checkToken, async function(pet, resp) {
     resp.status(404)
     resp.send("No ingredients found")
   }
+})
+
+app.post('/api/admin/ingredients', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var ing = pet.body.ingredient
+
+  try {
+    const docRef = await firestore.addDoc(collection(db, "ingredients"), {
+      name: ing.ingredient,
+      description: ing.escription,
+      type: ing.type,
+      alcohol: ing.alcohol,
+      abv: ing.abv
+    })
+    resp.status(200)
+    resp.send('Ingredient added succesfully: '+docRef.id)
+  }catch(e){
+    console.error("Error adding document: ", e);
+    resp.status(404)
+    resp.send('Something went wrong')
+  }
+})
+
+app.put('/api/admin/ingredients/:name', checkToken, async function(pet, resp) {
+  resp.setHeader('Access-Control-Allow-Origin', '*');
+  resp.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  resp.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  var ing = pet.body.ingredient
+  var name = pet.params.name
+  var ingdb
+  var q = firestore.query(collection(db, "ingredients"), firestore.where("name", "==", name))
+  const querySnapshot = await firestore.getDocs(q);
+  
+  if(querySnapshot.docs[0] != undefined){
+    doc = querySnapshot.docs[0].id
+    ingdb = querySnapshot.docs[0].data()
+  }else{
+    resp.status(404)
+    resp.send("Ingredient " + name + " no existe")
+  }
+  
+  const ref = firestore.doc(db, "ingredients", doc)
+  await updateDoc(ref, {
+    name: ing.ingredient,
+    description: ing.escription,
+    type: ing.type,
+    alcohol: ing.alcohol,
+    abv: ing.abv
+  })
+  resp.status(200)
+  resp.send("Actualizado con éxito")
 })
 
 app.get('/api/cocktails', async function(pet,resp) {
@@ -530,7 +818,7 @@ app.put('/api/cocktails/:id', checkToken, async function(pet, resp) {
 
   const ref = firestore.doc(db, "cocktails", doc)
   await updateDoc(ref, {
-    id: cocktail.id != undefined && cocktail.id != '' ? cocktail.id : cocktaildb.id,
+    id: cocktail.id != undefined && cocktail.id != '' ? Number(cocktail.id) : cocktaildb.id,
     name: cocktail.name != undefined && cocktail.name != '' ? cocktail.name : cocktaildb.name,
     glass: cocktail.glass != undefined && cocktail.glass != '' ? cocktail.glass : cocktaildb.glass,
     ingredientes: cocktail.ingredientes != undefined && cocktail.ingredientes.length > 0 ? cocktail.ingredientes : cocktaildb.ingredientes,

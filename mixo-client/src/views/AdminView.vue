@@ -42,7 +42,7 @@
           <td v-if="currentTab == 'cocktails'">{{ element.ingredientes?.length }}</td>
           <td v-if="currentTab == 'cocktails'">{{ element.category }}</td>
           <td v-if="currentTab == 'cocktails'">{{ element.glass }}</td>
-          <td style="display: flex"><button @click="editItem(element)" class="btn btn-outline-primary" style="margin-right: 8px">Editar</button> <button @click="deleteItem(element)" class="btn btn-danger">Borrar</button></td>
+          <td style="display: flex"><button @click="this.$router.push('/admin/new/'+currentTab)" class="btn btn-success" style="margin-right: 8px">Añadir</button> <button @click="editItem(element)" class="btn btn-outline-primary" style="margin-right: 8px">Editar</button> <button @click="deleteItem(element)" class="btn btn-danger">Borrar</button></td>
         </tr>
       </tbody>
     </table>
