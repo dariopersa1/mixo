@@ -46,9 +46,6 @@
         </tr>
       </tbody>
     </table>
-    <div>
-      <b-modal v-model="modalShow">Hello From Modal!</b-modal>
-    </div>
   </div>
 </template>
 <script>
@@ -64,10 +61,33 @@ export default {
   },
   methods: {
     editItem(element) {
-      this.modalShow = !this.modalShow
+      if(this.currentTab == 'categories' || this.currentTab == 'glass' || this.currentTab == 'ingredients'){
+        this.$router.push('/admin/edit/'+this.currentTab+'/'+element.name)
+      }else if(this.currentTab == 'users'){
+        this.$router.push('/admin/edit/'+this.currentTab+'/'+element.username)
+      }else if(this.currentTab == 'cocktails'){
+        this.$router.push('/admin/edit/'+this.currentTab+'/'+element.id)
+      }
     },
-    deleteItem(element) {
+    async deleteItem(element) {
+      var url = 'http://localhost:3000/api/'+this.currentTab+'/'
+      if(this.currentTab == 'categories' || this.currentTab == 'glass' || this.currentTab == 'ingredients'){
+        url = url+element.name
+      }else if(this.currentTab == 'users'){
+        url = url+element.username
+      }else if(this.currentTab == 'cocktails'){
+        url = url+element.id
+      }
 
+      await axios
+      .delete(url, {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`}})
+      .then(response => {
+        console.log(response.data)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+      .finally(() => this.getData(this.currentTab))
     },
     async getData(tab) {
       if(this.currentTab != tab){

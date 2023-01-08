@@ -37,7 +37,7 @@ export default {
   methods: {
     async login() {
       await axios
-      .post('http://localhost:3000/api/login?username='+this.username+'&password='+this.password, {headers: {'Content-Type': 'application/json'}})
+      .post('http://localhost:3000/api/login', {username: this.username, password: this.password}, {headers: {'Content-Type': 'application/json'}})
       .then(response => {
         if(response.status == 200){
           var token = response.data.token

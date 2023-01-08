@@ -5,7 +5,7 @@
       <RouterLink to="/">Home</RouterLink>
       <RouterLink v-if="token == ''" to="/login">Login</RouterLink>
       <RouterLink v-if="token == ''" to="/register">Registro</RouterLink>
-      <a href="/admin" v-if="admin">Administración</a>
+      <a href="/admin" v-if="admin == 'true'">Administración</a>
       <a href="/" v-if="token != ''" @click="logout">Cerrar sesión</a>
     </nav>
   </header>

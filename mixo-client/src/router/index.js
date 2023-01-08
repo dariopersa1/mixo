@@ -46,6 +46,16 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('../views/AdminView.vue')
+    },
+    {
+      path: '/admin/edit/:type/:item',
+      name: 'edit',
+      component: () => import('../views/ItemForm.vue')
+    },
+    {
+      path: '/admin/new/:type/',
+      name: 'newItem',
+      component: () => import('../views/ItemForm.vue')
     }
   ]
 })
